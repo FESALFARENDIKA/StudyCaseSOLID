@@ -2,11 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Ticket;
 use Illuminate\Http\Request;
 
 class TicketController extends Controller
 {
+    protected $ticketRepo;
+
+    public function __construct(\App\Repositories\EloquentTicketRepository $ticketRepo)
+    {
+        $this->ticketRepo = $ticketRepo;
+    }
+
     // GET ALL (pagination, search, orderBy, sortBy)
     public function index(Request $req)
     {
@@ -15,9 +21,7 @@ class TicketController extends Controller
         $orderBy = $req->orderBy ?? 'id';
         $sortBy = $req->sortBy ?? 'ASC';
 
-        $tickets = Ticket::where('movie_title', 'LIKE', "%$search%")
-            ->orderBy($orderBy, $sortBy)
-            ->paginate($limit);
+        $tickets = $this->ticketRepo->getAll($search, $orderBy, $sortBy, $limit);
 
         return response()->json($tickets);
     }
@@ -26,7 +30,7 @@ class TicketController extends Controller
     // GET ONE
     public function show($id)
     {
-        $ticket = Ticket::findOrFail($id);
+        $ticket = $this->ticketRepo->findById($id);
         return response()->json($ticket);
     }
 
@@ -34,19 +38,18 @@ class TicketController extends Controller
     // CREATE
     public function store(Request $req)
     {
-        $ticket = Ticket::create($req->all());
+        $ticket = $this->ticketRepo->create($req->all());
         return response()->json([
             "message" => "Ticket created",
             "data" => $ticket
-        ]);
+        ], 201);
     }
 
 
     // UPDATE
     public function update(Request $req, $id)
     {
-        $ticket = Ticket::findOrFail($id);
-        $ticket->update($req->all());
+        $ticket = $this->ticketRepo->update($id, $req->all());
 
         return response()->json([
             "message" => "Ticket updated",
@@ -58,7 +61,7 @@ class TicketController extends Controller
     // DELETE
     public function destroy($id)
     {
-        Ticket::destroy($id);
+        $this->ticketRepo->delete($id);
         return response()->json(["message" => "Ticket deleted"]);
     }
 }
