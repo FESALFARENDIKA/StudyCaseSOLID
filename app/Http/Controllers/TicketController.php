@@ -3,19 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ticket;
-use Illuminate\Http\Request;
+use App\Http\Requests\TicketSearchRequest;
+use App\Http\Requests\StoreTicketRequest;
+use App\Http\Requests\UpdateTicketRequest;
 
 class TicketController extends Controller
 {
     // GET ALL (pagination, search, orderBy, sortBy)
-    public function index(Request $req)
+    public function index(TicketSearchRequest $request)
     {
-        $limit = $req->limit ?? 10;
-        $search = $req->search ?? '';
-        $orderBy = $req->orderBy ?? 'id';
-        $sortBy = $req->sortBy ?? 'ASC';
+        $validated = $request->validated();
+        
+        $limit = $validated['limit'] ?? 10;
+        $search = $validated['search'] ?? '';
+        $orderBy = $validated['orderBy'] ?? 'id';
+        $sortBy = $validated['sortBy'] ?? 'ASC';
 
-        $tickets = Ticket::where('movie_title', 'LIKE', "%$search%")
+        $tickets = Ticket::where('movie_title', 'LIKE', "%{$search}%")
             ->orderBy($orderBy, $sortBy)
             ->paginate($limit);
 
@@ -32,9 +36,9 @@ class TicketController extends Controller
 
 
     // CREATE
-    public function store(Request $req)
+    public function store(StoreTicketRequest $request)
     {
-        $ticket = Ticket::create($req->all());
+        $ticket = Ticket::create($request->validated());
         return response()->json([
             "message" => "Ticket created",
             "data" => $ticket
@@ -43,10 +47,10 @@ class TicketController extends Controller
 
 
     // UPDATE
-    public function update(Request $req, $id)
+    public function update(UpdateTicketRequest $request, $id)
     {
         $ticket = Ticket::findOrFail($id);
-        $ticket->update($req->all());
+        $ticket->update($request->validated());
 
         return response()->json([
             "message" => "Ticket updated",
