@@ -2,22 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Ticket;
 use Illuminate\Http\Request;
+use App\Repositories\TicketRepositoryInterface;
 
 class TicketController extends Controller
 {
+    public function __construct(private TicketRepositoryInterface $ticketRepository)
+    {
+    }
+
     // GET ALL (pagination, search, orderBy, sortBy)
     public function index(Request $req)
     {
-        $limit = $req->limit ?? 10;
-        $search = $req->search ?? '';
-        $orderBy = $req->orderBy ?? 'id';
-        $sortBy = $req->sortBy ?? 'ASC';
-
-        $tickets = Ticket::where('movie_title', 'LIKE', "%$search%")
-            ->orderBy($orderBy, $sortBy)
-            ->paginate($limit);
+        $tickets = $this->ticketRepository->search($req->query());
 
         return response()->json($tickets);
     }
@@ -26,7 +23,7 @@ class TicketController extends Controller
     // GET ONE
     public function show($id)
     {
-        $ticket = Ticket::findOrFail($id);
+        $ticket = $this->ticketRepository->find($id);
         return response()->json($ticket);
     }
 
@@ -34,7 +31,7 @@ class TicketController extends Controller
     // CREATE
     public function store(Request $req)
     {
-        $ticket = Ticket::create($req->all());
+        $ticket = $this->ticketRepository->create($req->all());
         return response()->json([
             "message" => "Ticket created",
             "data" => $ticket
@@ -45,8 +42,7 @@ class TicketController extends Controller
     // UPDATE
     public function update(Request $req, $id)
     {
-        $ticket = Ticket::findOrFail($id);
-        $ticket->update($req->all());
+        $ticket = $this->ticketRepository->update($id, $req->all());
 
         return response()->json([
             "message" => "Ticket updated",
@@ -58,7 +54,7 @@ class TicketController extends Controller
     // DELETE
     public function destroy($id)
     {
-        Ticket::destroy($id);
+        $this->ticketRepository->delete($id);
         return response()->json(["message" => "Ticket deleted"]);
     }
 }
