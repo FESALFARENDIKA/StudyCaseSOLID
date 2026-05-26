@@ -4,7 +4,7 @@ namespace App\Repositories;
 
 use App\Models\Ticket;
 
-class EloquentTicketRepository
+class EloquentTicketRepository implements TicketRepositoryInterface
 {
     public function getAll($search = '', $orderBy = 'id', $sortBy = 'ASC', $limit = 10)
     {

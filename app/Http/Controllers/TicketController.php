@@ -8,7 +8,7 @@ class TicketController extends Controller
 {
     protected $ticketRepo;
 
-    public function __construct(\App\Repositories\EloquentTicketRepository $ticketRepo)
+    public function __construct(\App\Repositories\TicketRepositoryInterface $ticketRepo)
     {
         $this->ticketRepo = $ticketRepo;
     }
