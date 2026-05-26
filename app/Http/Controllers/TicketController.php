@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Ticket;
+
+use App\Interfaces\TicketRepositoryInterface;
 use App\Http\Requests\TicketSearchRequest;
 use App\Http\Requests\StoreTicketRequest;
 use App\Http\Requests\UpdateTicketRequest;
