@@ -9,19 +9,20 @@ use App\Http\Requests\UpdateTicketRequest;
 
 class TicketController extends Controller
 {
+    protected $ticketRepository;
+
+    public function __construct(
+        TicketRepositoryInterface $ticketRepository
+    ) {
+        $this->ticketRepository = $ticketRepository;
+    }
+    
     // GET ALL (pagination, search, orderBy, sortBy)
     public function index(TicketSearchRequest $request)
     {
-        $validated = $request->validated();
-        
-        $limit = $validated['limit'] ?? 10;
-        $search = $validated['search'] ?? '';
-        $orderBy = $validated['orderBy'] ?? 'id';
-        $sortBy = $validated['sortBy'] ?? 'ASC';
-
-        $tickets = Ticket::where('movie_title', 'LIKE', "%{$search}%")
-            ->orderBy($orderBy, $sortBy)
-            ->paginate($limit);
+        $tickets = $this->ticketRepository->getAll(
+            $request->validated()
+        );
 
         return response()->json($tickets);
     }
@@ -30,7 +31,8 @@ class TicketController extends Controller
     // GET ONE
     public function show($id)
     {
-        $ticket = Ticket::findOrFail($id);
+        $ticket = $this->ticketRepository->getById($id);
+
         return response()->json($ticket);
     }
 
@@ -38,7 +40,10 @@ class TicketController extends Controller
     // CREATE
     public function store(StoreTicketRequest $request)
     {
-        $ticket = Ticket::create($request->validated());
+        $ticket = $this->ticketRepository->store(
+            $request->validated()
+        );
+
         return response()->json([
             "message" => "Ticket created",
             "data" => $ticket
@@ -49,8 +54,10 @@ class TicketController extends Controller
     // UPDATE
     public function update(UpdateTicketRequest $request, $id)
     {
-        $ticket = Ticket::findOrFail($id);
-        $ticket->update($request->validated());
+        $ticket = $this->ticketRepository->update(
+            $id,
+            $request->validated()
+        );
 
         return response()->json([
             "message" => "Ticket updated",
@@ -62,7 +69,10 @@ class TicketController extends Controller
     // DELETE
     public function destroy($id)
     {
-        Ticket::destroy($id);
-        return response()->json(["message" => "Ticket deleted"]);
+        $this->ticketRepository->destroy($id);
+
+        return response()->json([
+            "message" => "Ticket deleted"
+        ]);
     }
 }
