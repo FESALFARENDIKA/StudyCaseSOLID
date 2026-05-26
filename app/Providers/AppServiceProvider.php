@@ -3,6 +3,9 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use App\Interfaces\TicketRepositoryInterface;
+use App\Repositories\TicketRepository;
+
 
 class AppServiceProvider extends ServiceProvider
 {
